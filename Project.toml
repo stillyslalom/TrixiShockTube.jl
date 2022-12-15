@@ -3,6 +3,13 @@ uuid = "b89063c1-5edb-4a7a-a412-cd5ecc67566a"
 authors = ["Alex Ames <aames@wisc.edu>"]
 version = "0.1.0"
 
+[deps]
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+PyThermo = "6fae04a5-42e9-4d0c-90a8-26d1a9434b6b"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+Trixi = "a7f1ee26-1774-49b1-8366-f1abc58fbfcb"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
 [compat]
 julia = "1.6"
 
