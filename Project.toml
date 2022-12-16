@@ -11,6 +11,7 @@ Trixi = "a7f1ee26-1774-49b1-8366-f1abc58fbfcb"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
+PyThermo = "0.2"
 julia = "1.6"
 
 [extras]
