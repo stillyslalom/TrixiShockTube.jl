@@ -1,3 +1,5 @@
+push!(LOAD_PATH,"../src/")
+
 using TrixiShockTube
 using Documenter
 
@@ -16,6 +18,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Function reference" => "reference.md",
     ],
 )
 

@@ -1,3 +1,6 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+PyThermo = "6fae04a5-42e9-4d0c-90a8-26d1a9434b6b"
 TrixiShockTube = "b89063c1-5edb-4a7a-a412-cd5ecc67566a"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"

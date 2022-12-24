@@ -1,6 +1,7 @@
 module TrixiShockTube
 
 using Trixi
+using Trixi: varnames
 using PyThermo
 using PyThermo.ShockTube
 using Unitful
@@ -9,7 +10,7 @@ using OrdinaryDiffEq
 
 export build_shockube_ic, calculate_Mach
 export build_limiter, build_semidiscretization, build_ODE
-export run_shock
+export run_shock, xtdata
 
 ## Utilities
 
@@ -268,17 +269,30 @@ and `limiter!` positivity-preserving limiter using the `CompressibleEulerMultico
 - `callbacks::Tuple(Function)...`: additional callbacks to pass to the `CallbackSet` constructor. See
     [Trixi.jl callbacks](https://trixi-framework.github.io/Trixi.jl/stable/callbacks/) for more details.
 """
-function run_shock(semi, saveat, cfl, limiter!; callbacks)
+function run_shock(semi, saveat, cfl, limiter!; callbacks=())
     ode, callback = build_ODE(semi, saveat, cfl; callbacks)
     solve(ode, 
-	      CarpenterKennedy2N54(limiter!, limiter!, williamson_condition=false);
+    CarpenterKennedy2N54(limiter!, limiter!, williamson_condition=false);
           dt=1.0, # arbitrary value
 		  saveat,
           save_everystep=false,
           callback)
 end
 
+"""
+    xtdata(sol, semi; nvisnodes=nothing)
 
+Extract the primitive field solution data from the `sol` solution and `semi` semidiscretization at `nvisnodes` visualization nodes.
+By default, `nvisnodes` is set to twice the number of nodes in the polynomial approximation space. If `nvisnodes`
+is set to zero, the solution data is extracted at the nodes of the approximation space.
+
+# Arguments
+- `sol::TrixiODESolution`: solution to extract the data from
+- `semi::SemidiscretizationHyperbolic`: semidiscretization for which to extract the data
+
+# Keyword arguments
+- `nvisnodes::Integer`: number of visualization nodes
+"""
 function xtdata(sol, semi; nvisnodes=nothing)
 	pd = [PlotData1D(sol.u[i], semi; nvisnodes).data for i in eachindex(sol.u)]
 	data = Dict(Symbol(name) => reduce(hcat, getindex.(pd, :, i))
