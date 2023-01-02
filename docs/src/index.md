@@ -21,7 +21,7 @@ The shock tube is initialized at rest with a discontinuity at the interface betw
 the lengths of the corresponding shock tube sections. The shock tube is then discretized using a uniform mesh with 2^8 elements.
 ```@repl 1
 slabs = (N₂   => ustrip(u"m", 30.0u"inch"),
-		 N₂Ar => ustrip(u"m", 125.0u"inch"))
+		N₂Ar => ustrip(u"m", 125.0u"inch"))
 ic, equations = TrixiShockTube.build_shocktube_ic(slabs)
 semi = build_semidiscretization(slabs, ic, equations;
 	initial_refinement_level=8)
@@ -29,7 +29,7 @@ semi = build_semidiscretization(slabs, ic, equations;
 
 The shock tube is then evolved in time using a 5-stage, 4th order Runge-Kutta method restricted by a CFL number of 0.5.
 A positivity-preserving limiter is applied to the solution at each time step. The solution is saved at 1000 equally spaced time steps.
-Trixi.jl saves the primitive variables, so we need to convert the solution to conserved variables with `xtdata` before plotting.
+Trixi.jl saves the conserved variables, so we need to convert the solution to primitive variables `u1, p, rho1, rho2, ...` with `xtdata` before plotting.
 ```@repl 1
 saveat = LinRange(0, 0.02, 1000)
 limiter! = build_limiter(equations)
