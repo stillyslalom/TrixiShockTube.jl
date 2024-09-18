@@ -12,7 +12,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 OrdinaryDiffEq = "6"
-PyThermo = "0.2"
+PyThermo = "0.2, 0.3"
 Roots = "2"
 Trixi = "0.4, 0.5, 0.6, 0.7, 0.8"
 Unitful = "1"
