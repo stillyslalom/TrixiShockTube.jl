@@ -6,7 +6,10 @@ using PyThermo
 using PyThermo.ShockTube
 using Unitful
 using Roots
-using OrdinaryDiffEq
+# using OrdinaryDiffEq
+using DiffEqBase
+using DiffEqCallbacks
+using OrdinaryDiffEqLowStorageRK
 
 export build_shockube_ic, calculate_Mach
 export build_limiter, build_semidiscretization, build_ODE
