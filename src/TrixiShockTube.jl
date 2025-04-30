@@ -63,7 +63,7 @@ function locator(lengths, origin)
 	end
 end
 
-# Implement basic ideal gas type <: Chemical for shock tube initialization
+# Implement basic ideal gas type <: PyThermo.Chemical for shock tube initialization
 """
     IdealGas(P, T, R, gamma)
 
@@ -71,36 +71,42 @@ Initialize an ideal gas with the specified pressure, temperature, specific gas c
 and isentropic exponent. All properties are specified in SI units:
 - `P`: pressure [Pa]
 - `T`: temperature [K]
-- `R`: specific gas constant [kJ/(kg*K)]
+- `R`: specific gas constant [J/(kg*K)]
 - `gamma`: isentropic exponent
 
 If you don't want to remember the argument order, you can use keyword arguments, e.g.
 
-    IdealGas(P = 101325, T = 300, R = 0.2968, gamma = 7/5)
+    IdealGas(P = 101325, T = 300, R = 296.8, gamma = 7/5)
 """
 mutable struct IdealGas <: PyThermo.Chemical
     P::Float64 # pressure [Pa]
     T::Float64 # temperature [K]
-    R::Float64 # specific gas constant [kJ/(kg*K)]
+    R::Float64 # specific gas constant [J/(kg*K)]
     gamma::Float64 # isentropic exponent
 end
 
 Base.getproperty(gas::IdealGas, prop::Symbol) = getfield(gas, prop)
+Base.setproperty!(gas::IdealGas, prop::Symbol, value::Real) = setfield!(gas, prop, Float64(value))
+
+@derived_dimension HeatCapacity Unitful.𝐋^2*Unitful.𝚯^-1*Unitful.𝐓^-2
+Base.setproperty!(gas::IdealGas, prop::Symbol, value::HeatCapacity)         = setproperty!(gas, prop, ustrip(u"J/(kg*K)", value))
+Base.setproperty!(gas::IdealGas, prop::Symbol, value::Unitful.Pressure)     = setproperty!(gas, prop, ustrip(u"Pa", value))
+Base.setproperty!(gas::IdealGas, prop::Symbol, value::Unitful.Temperature)  = setproperty!(gas, prop, ustrip(u"K", value))
 
 function IdealGas(; kwargs...)
     kws = values(kwargs)
     IdealGas(kws.P, kws.T, kws.R, kws.gamma)
 end
 
-const IDEAL_GASES = Dict(
-    "N2" => (R = 0.2968, gamma = 7/5),
-    "Ar" => (R = 0.2081, gamma = 5/3),
-    "O2" => (R = 0.2598, gamma = 5/3),
-    "CO2" => (R = 0.1889, gamma = 1.2884),
-    "air" => (R = 0.2871, gamma = 1.4),
-    "H2" => (R = 4.124, gamma = 1.4),
-    "He" => (R = 2.077, gamma = 1.67),
-    "SF6" => (R = 0.05693, gamma = 1.0937)
+const IDEAL_GASES = Dict( # Common shock tube gases
+    "N2" =>  (R = 296.8, gamma = 7/5),
+    "Ar" =>  (R = 208.1, gamma = 5/3),
+    "O2" =>  (R = 259.8, gamma = 5/3),
+    "CO2" => (R = 188.9, gamma = 1.2884),
+    "air" => (R = 287.1, gamma = 1.4),
+    "H2" =>  (R = 4124.0, gamma = 1.4),
+    "He" =>  (R = 2077.0, gamma = 1.67),
+    "SF6" => (R = 56.93, gamma = 1.0937),
 )
 
 """
@@ -110,26 +116,28 @@ Create an ideal gas with the specified species name, pressure, and temperature.
 If the species gas is not one of the following gases, its properties are obtained from `PyThermo`:
 [N2, Ar, O2, CO2, air, H2, He, SF6].
 """
-function IdealGas(species::String, P, T)
+function IdealGas(species::String, P::Real, T::Real)
     if haskey(IDEAL_GASES, species)
         gas = IDEAL_GASES[species]
         return IdealGas(P, T, gas.R, gas.gamma)
     else
         try
             gas = PyThermo.Species(species)
-            return IdealGas(P, T, ustrip(u"kJ/(kg*K)", R_specific(gas)), isentropic_exponent(gas))
+            return IdealGas(P, T, ustrip(u"J/(kg*K)", R_specific(gas)), isentropic_exponent(gas))
         catch e
             error("Unknown species: $species")
         end
     end
 end
 
-IdealGas(species::String; P, T) = IdealGas(species, P, T)
+IdealGas(species::String, P::Unitful.Pressure, T::Unitful.Temperature) = IdealGas(species, ustrip(u"Pa", P), ustrip(u"K", T)) 
 
-PyThermo.density(gas::IdealGas) = gas.P / (1000gas.R * gas.T) * u"kg/m^3"
+IdealGas(species::String; P, T) = IdealGas(species, P, T) # Forward P & T if given as kwargs
+
+PyThermo.density(gas::IdealGas) = gas.P / (gas.R * gas.T) * u"kg/m^3"
 PyThermo.pressure(gas::IdealGas) = gas.P * u"Pa"
 PyThermo.temperature(gas::IdealGas) = gas.T * u"K"
-PyThermo.R_specific(gas::IdealGas) = gas.R * u"kJ/(kg*K)"
+PyThermo.R_specific(gas::IdealGas) = gas.R * u"J/(kg*K)"
 PyThermo.isentropic_exponent(gas::IdealGas) = gas.gamma
 
 """
